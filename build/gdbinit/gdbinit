@@ -1,0 +1,2 @@
+source /home/student/facultate/PM/proiect_esp32c6/esp-idf/hello-world/build/gdbinit/symbols
+source /home/student/facultate/PM/proiect_esp32c6/esp-idf/hello-world/build/gdbinit/connect

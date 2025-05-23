@@ -1,0 +1,1 @@
+/home/student/facultate/PM/proiect_esp32c6/esp-idf/components/mbedtls/mbedtls/library/version_features.c
