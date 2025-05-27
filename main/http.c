@@ -22,7 +22,7 @@ esp_err_t dht_get_handler(httpd_req_t *req) {
 esp_err_t soil_get_handler(httpd_req_t *req) {
     printf("HTTP: Reading soil humidity...\n");
     char resp[64];
-    snprintf(resp, sizeof(resp), "{\"humidity\": %.1f}", soil_humidity);
+    snprintf(resp, sizeof(resp), "{\"humidity\": %d}", soil_humidity);
 
     httpd_resp_set_type(req, "application/json");
     httpd_resp_send(req, resp, strlen(resp));
@@ -37,7 +37,26 @@ esp_err_t water_get_handler(httpd_req_t *req) {
     httpd_resp_send(req, resp, strlen(resp));
     return ESP_OK;
 }
+esp_err_t logs_get_handler(httpd_req_t *req) {
+    printf("HTTP: Transmitting logs...\n");
+    char resp[MAX_LOGS * LOG_MESSAGE_SIZE + 20]; // +2 for brackets
+    char (*logs)[LOG_MESSAGE_SIZE] = (char (*)[LOG_MESSAGE_SIZE]) get_logs();
+    int log_index = get_log_index();
+    int offset = 0;
+    offset = snprintf(resp, sizeof(resp) - offset, "{\"logs\": [");
+    for (int i = 0; i < log_index; i++) {
+        offset += snprintf(resp + offset, sizeof(resp) - offset, logs[i]);
+        if(i < log_index - 1) {
+            offset += snprintf(resp + offset, sizeof(resp) - offset, ", ");
+        }
+    }
+    offset += snprintf(resp + offset, sizeof(resp) - offset, "]}");
+    resp[offset] = '\0'; 
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_send(req, resp, offset);
 
+    return ESP_OK;
+}
 
 httpd_handle_t start_webserver(void) {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -70,6 +89,15 @@ httpd_handle_t start_webserver(void) {
             .handler  = water_get_handler,
             .user_ctx = NULL
         };
+        httpd_register_uri_handler(server, &water_uri);
+        httpd_register_uri_handler(server, &soil_uri);
+        httpd_uri_t logs_uri = {
+            .uri      = "/logs",
+            .method   = HTTP_GET,
+            .handler  = logs_get_handler,
+            .user_ctx = NULL
+        };
+        httpd_register_uri_handler(server, &logs_uri);
     }
     return server;
 }

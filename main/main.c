@@ -3,7 +3,6 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
-#include "esp_timer.h"
 #include "nvs_flash.h"
 #include "dht.h"
 #include "config.h"
@@ -18,7 +17,7 @@
 #define MIN_HUMIDITY 45
 
 float temperature = 0.0f, humidity = 0.0f;
-float soil_humidity = 0.0f;
+int soil_humidity = 0;
 
 
 void water_plant() {
@@ -46,7 +45,7 @@ void app_main(void)
     // configureaza pinul pentru valva de apa
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << GPIO_WATER_START),
-        .mode = GPIO_MODE_OUTPUT_OD,
+        .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
         .intr_type = GPIO_INTR_DISABLE
@@ -84,7 +83,7 @@ void app_main(void)
     // Initializeaza ADC unit
     ESP_ERROR_CHECK(adc_oneshot_new_unit(&unit_cfg, &adc_handle));
 
-    // Configureaza canalul ADC (GPIO0 = ADC_CHANNEL_0) pentr
+    // Configureaza canalul ADC (GPIO0 = ADC_CHANNEL_0)
     adc_oneshot_chan_cfg_t chan_cfg = {
         .bitwidth = ADC_BITWIDTH_DEFAULT,
         .atten = ADC_ATTEN_DB_12         
@@ -96,18 +95,18 @@ void app_main(void)
     while(1) { 
         vTaskDelay(pdMS_TO_TICKS(10000)); // o data la 10 secunde fa verificarile
         ESP_ERROR_CHECK(adc_oneshot_read(adc_handle, ADC_CHANNEL_0, &raw));
-        soil_humidity = ((4095 - raw) / 4096.0) * 100;
-        printf("Soil humidity is: %.2f%%\n", soil_humidity);
+        soil_humidity = 100 * (3800 - raw) / (3800 - 1000);
+        printf("Soil humidity is: %d\n", soil_humidity);
         if(soil_humidity < MIN_HUMIDITY) {
-            char message[50];
-            sprintf(message, "Soil humidity is low: %.2f%%\n", soil_humidity);
+            char message[50] = {0};
+            sprintf(message, "Soil humidity is low: %d", soil_humidity);
             log_message(message);
             water_plant();
         } else {
             log_message("Soil humidity is sufficient.");
         }
         ESP_ERROR_CHECK(dht_read_float_data(DHT_TYPE_AM2301, GPIO_DHT22, &humidity, &temperature));
-        printf("Read DHT22 sensor: Humidity: %.2f%%, Temperature: %.2f°C\n", humidity, temperature);
+        printf("Read DHT22 sensor: Humidity: %.2f, Temperature: %.2f°C\n", humidity, temperature);
 
     
     }

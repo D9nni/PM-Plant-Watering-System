@@ -41,5 +41,17 @@
         .catch(err => document.getElementById("output").textContent = "Eroare: " + err);
     }
   </script>
+  <h1>Citeste logurile</h1>
+  <button onclick="getData3()">Cere date</button>
+  <pre id="output"></pre>
+
+  <script>
+    function getData3() {
+      fetch("/logs")
+        .then(r => r.json())
+        .then(data => document.getElementById("output").textContent = JSON.stringify(data, null, 2))
+        .catch(err => document.getElementById("output").textContent = "Eroare: " + err);
+    }
+  </script>
 </body>
 </html>

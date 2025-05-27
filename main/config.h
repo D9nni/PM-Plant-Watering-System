@@ -1,7 +1,7 @@
 
 
 extern float temperature, humidity;
-extern float soil_humidity;
+extern int soil_humidity;
 
 
 
