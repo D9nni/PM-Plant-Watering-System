@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sistem de udare si monitorizare a plantelor</title>
+</head>
+<body>
+  <h1>Citire umiditate sol</h1>
+  <button onclick="getData()">Cere date</button>
+  <pre id="output"></pre>
+
+  <script>
+    function getData() {
+      fetch("/soil")
+        .then(r => r.json())
+        .then(data => document.getElementById("output").textContent = JSON.stringify(data, null, 2))
+        .catch(err => document.getElementById("output").textContent = "Eroare: " + err);
+    }
+  </script>
+  <h1>Citire umiditate si temperatura aer</h1>
+  <button onclick="getData1()">Cere date</button>
+  <pre id="output"></pre>
+
+  <script>
+    function getData1() {
+      fetch("/dht")
+        .then(r => r.json())
+        .then(data => document.getElementById("output").textContent = JSON.stringify(data, null, 2))
+        .catch(err => document.getElementById("output").textContent = "Eroare: " + err);
+    }
+  </script>
+  <h1>Porneste apa</h1>
+  <button onclick="getData2()">Cere date</button>
+  <pre id="output"></pre>
+
+  <script>
+    function getData2() {
+      fetch("/water")
+        .then(r => r.json())
+        .then(data => document.getElementById("output").textContent = JSON.stringify(data, null, 2))
+        .catch(err => document.getElementById("output").textContent = "Eroare: " + err);
+    }
+  </script>
+</body>
+</html>
